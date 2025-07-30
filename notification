@@ -1,4 +1,3 @@
--- https://scriptblox.com/u/vxsty 👍
 local NotifUI = Instance.new("ScreenGui")
 local Holder = Instance.new("ScrollingFrame")
 local Sorter = Instance.new("UIListLayout")
