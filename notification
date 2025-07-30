@@ -1,6 +1,7 @@
 local NotifUI = Instance.new("ScreenGui")
 local Holder = Instance.new("ScrollingFrame")
 local Sorter = Instance.new("UIListLayout")
+local TweenService = game:GetService("TweenService")
 
 NotifUI.Name = "NotifUI"
 NotifUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -64,7 +65,8 @@ function CreateNotification(Options)
 	Dismiss.BorderColor3 = Color3.fromRGB(27, 42, 53)
 	Dismiss.Position = UDim2.new(0.0996219441, 0, 0.646335304, 0)
 	Dismiss.Size = UDim2.new(0, 262, 0, 132)
-	Dismiss.Visible = false
+	Dismiss.Visible = true
+	Dismiss.Position = UDim2.new(1.5, 0, 0.646335304, 0) -- Fora da tela à direita
 
 	UICorner.Parent = Dismiss
 
@@ -79,6 +81,7 @@ function CreateNotification(Options)
 	TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	TextLabel.TextSize = 16.000
 	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TextLabel.TextTransparency = 0
 
 	TextLabel_2.Parent = Dismiss
 	TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -93,6 +96,7 @@ function CreateNotification(Options)
 	TextLabel_2.TextWrapped = true
 	TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
 	TextLabel_2.TextYAlignment = Enum.TextYAlignment.Top
+	TextLabel_2.TextTransparency = 0
 
 	if Options.Buttons[1] then
 		TextButton.Parent = Dismiss
@@ -105,33 +109,50 @@ function CreateNotification(Options)
 		TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 		TextButton.TextSize = 16.000
 		TextButton.TextStrokeColor3 = Color3.fromRGB(31, 33, 35)
+		TextButton.BackgroundTransparency = 0
+		TextButton.TextTransparency = 0
 		UICorner_2.CornerRadius = UDim.new(0, 6)
 		UICorner_2.Parent = TextButton
+		
 		TextButton.MouseButton1Click:Connect(function()
 			if Options.Buttons[1].Callback then
 				task.spawn(Options.Buttons[1].Callback)
 			end
 			if Options.Buttons[1].ClosesUI then
-				Dismiss:Destroy()
+				local slideOut = TweenService:Create(Dismiss, 
+					TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
+					{Position = UDim2.new(1.5, 0, 0.646335304, 0)}
+				)
+				
+				slideOut:Play()
+				slideOut.Completed:Connect(function()
+					Dismiss:Destroy()
+				end)
 			end
 		end)
 	end
-	Dismiss.Visible = true
+	
+	local slideIn = TweenService:Create(Dismiss, 
+		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
+		{Position = UDim2.new(0.0996219441, 0, 0.646335304, 0)}
+	)
+	
+	slideIn:Play()
+	
 	if not Options.NeverExpire then
 		task.delay(Options.Length, function()
-			if not Dismiss then return end
-			local c = {'Frame', 'ScrollingFrame'}
-			for i, v in next, Dismiss:GetDescendants() do
-				if v.ClassName:find("Text") then
-					game:GetService("TweenService"):Create(v, TweenInfo.new(.4), {TextTransparency = 1}):Play()
-				else
-					if table.find(c, v.ClassName) then
-						game:GetService("TweenService"):Create(v, TweenInfo.new(.4), {Transparency = 1}):Play()
-					end
+			if not Dismiss or not Dismiss.Parent then return end
+			local slideOut = TweenService:Create(Dismiss, 
+				TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
+				{Position = UDim2.new(1.5, 0, 0.646335304, 0)}
+			)
+			
+			slideOut:Play()
+			slideOut.Completed:Connect(function()
+				if Dismiss and Dismiss.Parent then
+					Dismiss:Destroy()
 				end
-			end
-			task.wait(.4)
-			Dismiss:Destroy()
+			end)
 		end)
 	end
 end
