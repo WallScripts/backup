@@ -1674,7 +1674,7 @@ Lib.CodeFrame = (function()
 				local relativeLine = lines[selY+1] or ""
 				selX = math.min(#relativeLine, selX + obj:TabAdjust(selX,selY))
 
-				obj.SelectionRange = {{-1,-1},{-1,-1}}
+		-- 	obj.SelectionRange = {{-1,-1},{-1,-1}}
 				obj:MoveCursor(selX,selY)
 				obj.FloatCursorX = selX
 				
@@ -3996,7 +3996,6 @@ Lib.CodeFrame = (function()
 			ViewY = 0,
 			Colors = syntaxColor or table.clone(syntaxColors),
 			ColoredLines = { },
-			Lines = {""},
 			LineFrames = { },
 			Editable = true,
 			Editing = false,
@@ -4122,33 +4121,39 @@ return table.freeze({
 	end,
 
 	fromTextBox = function(self, textBox, syntaxColors, env)
-		syntaxColors = table.clone(typeof(syntaxColors) == "table" and syntaxColors or themes.Galaxy)
+    syntaxColors = table.clone(typeof(syntaxColors) == "table" and syntaxColors or themes.Galaxy)
 
-		local new = self:new(syntaxColors, env)
-		local colors = new.Colors
+    local originalText = textBox.Text
 
-		colors.Background = textBox.BackgroundColor3
-		colors.Transparency = textBox.BackgroundTransparency
-		colors.Text = syntaxColors and syntaxColors.Text or textBox.TextColor3
-		colors.Font = syntaxColors and syntaxColors.Font or textBox.Font
+    local new = self:new(syntaxColors, env)
+    local colors = new.Colors
 
-		new.Parent = textBox.Parent
-		new.Size = textBox.Size
-		new.Position = textBox.Position
-		new.AnchorPoint = textBox.AnchorPoint
-		new.LayoutOrder = textBox.LayoutOrder
-		new.ZIndex = textBox.ZIndex
-		new.Visible = textBox.Visible
-		new.Name = textBox.Name
+    colors.Background = textBox.BackgroundColor3
+    colors.Transparency = textBox.BackgroundTransparency
+    colors.Text = syntaxColors and syntaxColors.Text or textBox.TextColor3
+    colors.Font = syntaxColors and syntaxColors.Font or textBox.Font
 
-		for _, v in textBox:GetChildren() do
-			v.Parent = new.Gui
-		end
+    new.Parent = textBox.Parent
+    new.Size = textBox.Size
+    new.Position = textBox.Position
+    new.AnchorPoint = textBox.AnchorPoint
+    new.LayoutOrder = textBox.LayoutOrder
+    new.ZIndex = textBox.ZIndex
+    new.Visible = textBox.Visible
+    new.Name = textBox.Name
 
-		textBox:Destroy()
+    for _, v in textBox:GetChildren() do
+        v.Parent = new.Gui
+    end
 
-		return new
-	end,
+    textBox:Destroy()
+
+    if originalText and originalText ~= "" then
+        new.Text = originalText
+    end
+
+    return new
+end,
 
 	SyntaxColors = table.clone(syntaxColors),
 	Themes = themes
